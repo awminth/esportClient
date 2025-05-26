@@ -213,18 +213,15 @@
                         if (jsonData.status === "success") {
                             let redirectUrl = jsonData.redirect_url;
 
-                            // If the URL starts with //, add https:
-                            if (redirectUrl.startsWith("//")) {
-                                redirectUrl = "https:" + redirectUrl;
-                            }
-
                             // Redirect to the login URL
                             window.location.href = redirectUrl;
-                        } else {
+                        } 
+                        else {
                             console.log("Error data", jsonData);
                             swal("Error", "Login failed", "error");
                         }
-                    } catch (err) {
+                    } 
+                    catch (err) {
                         console.error("Invalid JSON:", err, data);
                         swal("Error", "Unexpected server response", "error");
                     }
