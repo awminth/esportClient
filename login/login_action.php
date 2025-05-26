@@ -3,143 +3,199 @@
 include("../config.php");
 $action=$_POST["action"];
 
-if($action=="login11111"){
-    $serverid = "";
-    $username=$_POST["username"];
-    $password=$_POST["password"];
-    $sql = "select * from tblplayer where UserName='$username' and Password='$password'";
-    $result = mysqli_query($con, $sql);
-    if(mysqli_num_rows($result)>0){
-        $row = mysqli_fetch_array($result);
-        $serverid = $row['ServerID'];
-
-        //Send data to API
-        $url = "https://ex-api-demo-yy.568win.com/web-root/restricted/player/login.aspx"; // Replace with your API URL
-
-        $data = [
-            "CompanyKey" => $companykey,
-            "ServerId" => $serverid,
-            "Username" => $username,
-            "Portfolio" => $portfolio,
-            "IsWapSports" => "true",
-        ];
-
-        // Initialize cURL session
-        $ch = curl_init($url);
-
-        // Set cURL options
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        
-        // Send JSON data
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        
-        // Set the appropriate Content-Type for JSON
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            "Content-Type: application/json"
-        ]);
-
-        // Execute the request and get the response
-        $response = curl_exec($ch);
-
-        // Decode JSON
-        $data = json_decode($response, true);
-
-        // Close cURL session
-        curl_close($ch);
-
-        // note username & password in session
-        $_SESSION["esportclient_userid"] = $row['AID'];
-        $_SESSION["esportclient_username"] = $row['UserName'];   
-        $_SESSION["esportclient_userpassword"] = $row['Password']; 
-
-        //remember username and password
-        if(!empty($_POST['remember'])){
-            setcookie("member_login",$row['UserName'],time()+(10*365*24*60*60));
-            setcookie("member_password",$row['Password'],time()+(10*365*24*60*60));
-        }
-        else{
-            if(isset($_COOKIE['member_login'])){
-                setcookie("member_login",'');
-            }
-            if(isset($_COOKIE['member_password'])){
-                setcookie("member_password",'');
-            }
-        }
-        
-
-        //go to white lable
-        $lang = "en";
-        $device = getDeviceType();
-        $finalUrl = "https:{$data['url']}&gpid={$gpid}&gameId={$gameId}&lang={$lang}&device={$device}";
-        echo $finalUrl;
-        
-        // if (isset($data['url'])) {
-        //     $finalUrl = "{$data['url']}&gpid={$gpid}&gameId={$gameId}&lang={$lang}&device={$device}";
-            
-        //     $_SESSION['iframe_url'] = $finalUrl; // Store the URL in session
-            
-        //     echo "success"; // Send success response
-        // } 
-        // else {
-        //     echo "error"; // Indicate an error
-        // }
-
-        // Redirect to the received URL
-        // if (!empty($finalUrl)) {
-        //     header("Location: " . $finalUrl);
-        //     exit(); // Stop further execution
-        // } else {
-        //     echo "Error: No URL received from API.";
-        // }
-        
-    }
-
-}
-
-if($action=="login"){
-    //Send data to API
-    $url = "https://ex-api-demo-yy.568win.com/web-root/restricted/player/login.aspx"; // Replace with your API URL
-
-    $data = [
-        "CompanyKey" => "E7B305CAFF794BA7926F96DDE9AC392Z",
-        "ServerId" => "YY-test",
-        "Username" => "0990000002_bossxdemoagentmmk001",
-        "Portfolio" => $portfolio,
-        "IsWapSports" => "true",
-    ];
-
-    // Initialize cURL session
-    $ch = curl_init($url);
-
-    // Set cURL options
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    
-    // Send JSON data
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    
-    // Set the appropriate Content-Type for JSON
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        "Content-Type: application/json"
-    ]);
-
-    // Execute the request and get the response
-    $response = curl_exec($ch);
-
-    // Decode JSON
-    $data = json_decode($response, true);
-
-    // Close cURL session
-    curl_close($ch);
-
-    //go to white lable
-    $lang = "en";
+if ($action == "login") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
     $device = getDeviceType();
-    $finalUrl = "https:{$data['url']}&gpid={$gpid}&gameId={$gameId}&lang={$lang}&device={$device}";
-    echo $finalUrl;
 
+    mysqli_query($con, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+    mysqli_begin_transaction($con);
+
+    try {
+        $sql = "SELECT * FROM tblplayer WHERE UserName=? AND Password=? FOR UPDATE";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("ss", $username, $password);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $serverid = $row['ServerID'];
+
+            // Call API
+            $url = "https://ex-api-demo-yy.568win.com/web-root/restricted/player/v2/login.aspx";
+
+            $postData = [
+                "Lang" => "EN",
+                "Device" => $device,
+                "BetCode" => "string",
+                "GameId" => 0,
+                "GpId" => 0,
+                "Username" => $username,
+                "Portfolio" => "SportsBook",
+                "IsWapSports" => false,
+                "CompanyKey" => $companykey,
+                "ServerId" => $serverid
+            ];
+
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($postData));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Content-Type: application/json'
+            ]);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $apiResponse = json_decode($response, true);
+
+            if (isset($apiResponse['url']) && !empty($apiResponse['url'])) {
+                mysqli_commit($con);
+
+                // Save session
+                $_SESSION["esportclient_userid"] = $row['AID'];
+                $_SESSION["esportclient_username"] = $row['UserName'];
+                $_SESSION["esportclient_userpassword"] = $row['Password'];
+
+                // Handle remember me
+                if (!empty($_POST['remember'])) {
+                    setcookie("member_login", $row['UserName'], time() + (10 * 365 * 24 * 60 * 60));
+                    setcookie("member_password", $row['Password'], time() + (10 * 365 * 24 * 60 * 60));
+                } 
+                else {
+                    setcookie("member_login", '');
+                    setcookie("member_password", '');
+                }
+
+                $url = $apiResponse['url'];
+                if (strpos($url, '//') === 0) {
+                    $url = 'https:' . $url;
+                }
+
+                // Redirect to one-time login URL
+                echo json_encode([
+                    "status" => "success",
+                    "redirect_url" => $url
+                ]);
+                exit();
+            } 
+            else {
+                mysqli_rollback($con);
+                echo json_encode([
+                    "status" => "error",
+                    "message" => "No URL received from API."
+                ]);
+                exit();
+            }
+        } 
+        else {
+            mysqli_rollback($con);
+            echo "Invalid credentials.";
+        }
+    } 
+    catch (Exception $e) {
+        mysqli_rollback($con);
+        error_log($e->getMessage());
+        echo "System error.";
+    }
 }
+
+if ($action == "login11") {
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+    $serverid = "";
+
+    // Set transaction isolation level and start transaction
+    mysqli_query($con, "SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+    mysqli_begin_transaction($con);
+
+    try {
+        // Prepare and execute secure query
+        $sql = "SELECT * FROM tblplayer WHERE UserName=? AND Password=? FOR UPDATE";
+        $stmt = $con->prepare($sql);
+        $stmt->bind_param("ss", $username, $password);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        if ($res->num_rows > 0) {
+            $row = $res->fetch_assoc();
+            $serverid = $row['ServerID'];
+
+            // Prepare API call data
+            $url = "https://ex-api-demo-yy.568win.com/web-root/restricted/player/v2/login.aspx";
+            $data = [
+                "CompanyKey" => $companykey,
+                "ServerId" => $serverid,
+                "Username" => $username,
+                "Portfolio" => $portfolio,
+                "IsWapSports" => "true",
+            ];
+
+            // Initialize and execute cURL
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                "Content-Type: application/json"
+            ]);
+
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $data = json_decode($response, true);
+
+            // Check if API returned valid URL
+            if (isset($data['url'])) {
+                $lang = "en";
+                $device = getDeviceType(); // Assume this is your custom function
+                $finalUrl = "{$data['url']}&gpid={$gpid}&gameId={$gameId}&lang={$lang}&device={$device}";
+
+                // Store session data
+                $_SESSION["esportclient_userid"] = $row['AID'];
+                $_SESSION["esportclient_username"] = $row['UserName'];
+
+                // Note: Avoid storing plain-text password in session
+                // $_SESSION["esportclient_userpassword"] = $row['Password']; // Not recommended
+
+                // Remember login in cookies (not recommended for password)
+                if (!empty($_POST['remember'])) {
+                    setcookie("member_login", $row['UserName'], time() + (10 * 365 * 24 * 60 * 60));
+                    setcookie("member_password", $row['Password'], time() + (10 * 365 * 24 * 60 * 60));
+                } else {
+                    setcookie("member_login", '', time() - 3600);
+                    setcookie("member_password", '', time() - 3600);
+                }
+
+                $_SESSION['iframe_url'] = $finalUrl;
+
+                // Commit transaction
+                mysqli_commit($con);
+
+                // Redirect to final URL
+                header("Location: " . $finalUrl);
+                exit();
+            } else {
+                mysqli_rollback($con);
+                echo "Error: No URL received from API.";
+            }
+        } else {
+            mysqli_rollback($con);
+            echo "Invalid username or password.";
+        }
+    } catch (mysqli_sql_exception $e) {
+        mysqli_rollback($con);
+        error_log($e->getMessage());
+        echo "Database error.";
+    } catch (Exception $e) {
+        mysqli_rollback($con);
+        error_log($e->getMessage());
+        echo "System error.";
+    }
+}
+
 
 function getDeviceType() {
     $userAgent = strtolower($_SERVER['HTTP_USER_AGENT']);

@@ -168,9 +168,37 @@
     <script>
     $(document).ready(function() {
 
+        // $("#frmlogin").on("submit", function(e) {
+        //     e.preventDefault();
+        //     var formData = new FormData(this);
+        //     $.ajax({
+        //         type: "post",
+        //         url: "<?php echo roothtml.'login/login_action.php' ?>",
+        //         data: formData,
+        //         contentType: false,
+        //         processData: false,
+        //         success: function(data) {
+        //             if (data.status === "success") {
+        //                 let redirectUrl = jsonData.redirect_url;
+        //                 if (redirectUrl.startsWith("//")) {
+        //                     redirectUrl = "https:" + redirectUrl;
+        //                 }
+        //                 location.href = redirectUrl;
+        //             } 
+        //             else {
+        //                 // swal("Error", "Login failed", "error");
+        //                 console.log("Error data"+data);
+        //             }
+        //         },
+        //         error: function() {
+        //             swal("Error", "Server error occurred", "error");
+        //         }
+        //     });
+        // });
         $("#frmlogin").on("submit", function(e) {
             e.preventDefault();
             var formData = new FormData(this);
+
             $.ajax({
                 type: "post",
                 url: "<?php echo roothtml.'login/login_action.php' ?>",
@@ -178,16 +206,35 @@
                 contentType: false,
                 processData: false,
                 success: function(data) {
-                    // if (data === "success") {
-                    //     location.href = "<?=roothtml.'home/home.php' ?>";
-                    // } else {
-                    //     swal("Error",data,"error");
-                    // }
-                    // swal("",data,"");
-                    location.href = data;
+                    try {
+                        // Parse JSON response
+                        var jsonData = typeof data === "string" ? JSON.parse(data) : data;
+
+                        if (jsonData.status === "success") {
+                            let redirectUrl = jsonData.redirect_url;
+
+                            // If the URL starts with //, add https:
+                            if (redirectUrl.startsWith("//")) {
+                                redirectUrl = "https:" + redirectUrl;
+                            }
+
+                            // Redirect to the login URL
+                            window.location.href = redirectUrl;
+                        } else {
+                            console.log("Error data", jsonData);
+                            swal("Error", "Login failed", "error");
+                        }
+                    } catch (err) {
+                        console.error("Invalid JSON:", err, data);
+                        swal("Error", "Unexpected server response", "error");
+                    }
+                },
+                error: function() {
+                    swal("Error", "Server error occurred", "error");
                 }
             });
         });
+
     });
     </script>
 
