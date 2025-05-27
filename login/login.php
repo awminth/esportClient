@@ -46,16 +46,40 @@
     <link rel="stylesheet"
         href="<?php echo roothtml.'lib/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' ?>">
 
-    <!-- =======================================================
-    * Template Name: NiceAdmin
-    * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
-    * Updated: Apr 20 2024 with Bootstrap v5.3.3
-    * Author: BootstrapMade.com
-    * License: https://bootstrapmade.com/license/
-    ======================================================== -->
+    <style>
+    body {
+        background: #236e91;
+        background: linear-gradient(25deg, rgba(35, 110, 145, 1) 0%,
+                rgba(46, 128, 143, 1) 17%,
+                rgba(53, 141, 141, 1) 34%,
+                rgba(63, 159, 138, 1) 51%,
+                rgba(64, 160, 138, 1) 39%,
+                rgba(69, 169, 137, 1) 52%);
+    }
+    
+    .loader {
+        position: fixed;
+        z-index: 999;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+        background-color: Black;
+        filter: alpha(opacity=60);
+        opacity: 0.7;
+        -moz-opacity: 0.8;
+        display: flex;           /* Flexbox ကိုသုံးပါ */
+        justify-content: center; /* ရေပြင်ညီအလိုက် center ချပါ */
+        align-items: center;     /* ဒေါင်လိုက်အလိုက် center ချပါ */
+    }
+
+    .center-load {
+        text-align: center;      /* အတွင်းပိုင်း element များကို center ချပါ */
+    }
+    </style>
 </head>
 
-<body style="background-color: #182b31;">
+<body>
     <main>
         <div class="container">
 
@@ -128,7 +152,11 @@
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
             class="bi bi-arrow-up-short"></i></a>
 
-    <iframe id="gameFrame" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+    <div class="loader" style="display:none;">
+        <div class="center-load">
+            <img src="<?php echo roothtml.'lib/images/loading.gif'?>" />
+        </div>
+    </div>
 
 
     <!-- Vendor JS Files -->
@@ -164,8 +192,12 @@
                 data: formData,
                 contentType: false,
                 processData: false,
+                beforeSend: function() {
+                    $(".loader").show();
+                },
                 success: function(data) {
                     try {
+                        $(".loader").hide();
                         // Parse JSON response
                         var jsonData = typeof data === "string" ? JSON.parse(data) : data;
 
@@ -174,13 +206,11 @@
 
                             // Redirect to the login URL
                             window.location.href = redirectUrl;
-                        } 
-                        else {
+                        } else {
                             console.log("Error data", jsonData);
                             swal("Error", "Login failed", "error");
                         }
-                    } 
-                    catch (err) {
+                    } catch (err) {
                         console.error("Invalid JSON:", err, data);
                         swal("Error", "Unexpected server response", "error");
                     }
