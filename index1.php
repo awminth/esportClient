@@ -1,5 +1,5 @@
 <?php
-    include('../config.php');
+    include('config.php');
 ?>
 
 <!DOCTYPE html>
@@ -47,35 +47,16 @@
         href="<?php echo roothtml.'lib/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' ?>">
 
     <style>
-    body {
-        background: #236e91;
-        background: linear-gradient(25deg, rgba(35, 110, 145, 1) 0%,
-                rgba(46, 128, 143, 1) 17%,
-                rgba(53, 141, 141, 1) 34%,
-                rgba(63, 159, 138, 1) 51%,
-                rgba(64, 160, 138, 1) 39%,
+        body{
+            background: #236e91;
+            background: linear-gradient(
+                25deg, rgba(35, 110, 145, 1) 0%,
+                rgba(46, 128, 143, 1) 17%, 
+                rgba(53, 141, 141, 1) 34%, 
+                rgba(63, 159, 138, 1) 51%, 
+                rgba(64, 160, 138, 1) 39%, 
                 rgba(69, 169, 137, 1) 52%);
-    }
-    
-    .loader {
-        position: fixed;
-        z-index: 999;
-        height: 100%;
-        width: 100%;
-        top: 0;
-        left: 0;
-        background-color: Black;
-        filter: alpha(opacity=60);
-        opacity: 0.7;
-        -moz-opacity: 0.8;
-        display: flex;           /* Flexbox ကိုသုံးပါ */
-        justify-content: center; /* ရေပြင်ညီအလိုက် center ချပါ */
-        align-items: center;     /* ဒေါင်လိုက်အလိုက် center ချပါ */
-    }
-
-    .center-load {
-        text-align: center;      /* အတွင်းပိုင်း element များကို center ချပါ */
-    }
+        }
     </style>
 </head>
 
@@ -98,43 +79,47 @@
                                         <p class="text-center small">Enter your personal details to create account</p>
                                     </div>
 
-                                    <form class="row g-3 needs-validation" novalidate id="frmlogin">
-                                        <input type="hidden" name="action" value="login" />
+                                    <form class="row g-3 needs-validation" novalidate id="frmcreate">
+                                    <input type="hidden" name="action" value="save" />
                                         <div class="col-12">
                                             <label for="yourUsername" class="form-label">Username</label>
                                             <div class="input-group has-validation">
                                                 <span class="input-group-text" id="inputGroupPrepend">@</span>
-                                                <input type="text" name="username" class="form-control" id="username"
-                                                    value="<?php if(isset($_COOKIE['member_login'])){ echo $_COOKIE['member_login'];}?>"
-                                                    required>
+                                                <input type="text" name="username" class="form-control"
+                                                    id="username" required>
                                                 <div class="invalid-feedback">Please choose a username.</div>
                                             </div>
                                         </div>
 
                                         <div class="col-12">
                                             <label for="yourPassword" class="form-label">Password</label>
-                                            <input type="password" name="password" class="form-control" id="password"
-                                                value="<?php if(isset($_COOKIE['member_login'])){ echo $_COOKIE['member_password'];}?>"
-                                                required>
+                                            <input type="password" name="password" class="form-control"
+                                                id="password" required>
                                             <div class="invalid-feedback">Please enter your password!</div>
                                         </div>
 
                                         <div class="col-12">
-                                            <div class="form-check">
-                                                <input class="form-check-input" name="remember"
-                                                    <?php if(isset($_COOKIE['member_password'])){?> checked <?php } ?>
-                                                    type="checkbox" id="remember">
-                                                <label class="form-check-label" for="acceptTerms">Remember
-                                                    me</a></label>
-                                            </div>
+                                            <label for="youtAgent" class="form-label">Agent</label>
+                                            <select required class="form-select select2" name="agentid">
+                                                <option selected="">Choose Your Agent Name</option>
+                                                <?=load_agent();?>
+                                            </select>
+                                            <div class="invalid-feedback">Please enter a valid Email adddress!</div>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label for="yourdisplayName" class="form-label">DisplayName</label>
+                                            <input type="text" name="displayname" class="form-control" required>
+                                            <div class="invalid-feedback">Please, enter username!</div>
+                                        </div>
+                                        
+                                        <div class="col-12">
+                                            <button class="btn btn-primary w-100" type="submit" id="btncreate">Create
+                                                Account</button>
                                         </div>
                                         <div class="col-12">
-                                            <button class="btn btn-primary w-100" type="submit"
-                                                id="btncreate">Login</button>
-                                        </div>
-                                        <div class="col-12">
-                                            <p class="small mb-0">Don't have account? <a
-                                                    href="<?php echo roothtml.'index.php'?>">Create an account</a></p>
+                                            <p class="small mb-0">Already have an account? <a
+                                                    href="<?php echo roothtml.'login/login.php'?>">Log in</a></p>
                                         </div>
                                     </form>
                                 </div>
@@ -151,13 +136,6 @@
 
     <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
             class="bi bi-arrow-up-short"></i></a>
-
-    <div class="loader" style="display:none;">
-        <div class="center-load">
-            <img src="<?php echo roothtml.'lib/images/loading.gif'?>" />
-        </div>
-    </div>
-
 
     <!-- Vendor JS Files -->
     <script src="<?php echo roothtml.'assets/vendor/apexcharts/apexcharts.min.js'?>"></script>
@@ -182,47 +160,48 @@
     <script>
     $(document).ready(function() {
 
-        $("#frmlogin").on("submit", function(e) {
+        $("#frmcreate").on("submit", function(e) {
             e.preventDefault();
             var formData = new FormData(this);
-
+            var username = $("[name='username']").val();
+            var regex_username = /^[a-zA-Z0-9_]{6,40}$/;
+            //Check Username
+            if (!regex_username.test(username)) {
+                swal("Warning", "(Number, Letter and _ only.)(Username must be 6 to 40 characters)",
+                    "warning");
+                return false;
+            }
+            //Check Password
+            var password = $("[name='password']").val();
+            var regex_password = /^[a-zA-Z0-9]{6,20}$/;
+            if (!regex_password.test(password)) {
+                swal("Warning", "(Number, Letter only.)(Password must be 6 to 20 characters)",
+                    "warning");
+                return false;
+            }
             $.ajax({
                 type: "post",
-                url: "<?php echo roothtml.'login/login_action.php' ?>",
+                url: "<?php echo roothtml.'index_action.php' ?>",
                 data: formData,
                 contentType: false,
                 processData: false,
-                beforeSend: function() {
-                    $(".loader").show();
-                },
                 success: function(data) {
-                    try {
-                        $(".loader").hide();
-                        // Parse JSON response
-                        var jsonData = typeof data === "string" ? JSON.parse(data) : data;
-
-                        if (jsonData.status === "success") {
-                            let redirectUrl = jsonData.redirect_url;
-
-                            // Redirect to the login URL
-                            window.location.href = "<?= roothtml.'setup/home.php'?>" + "?target_url=" + encodeURIComponent(redirectUrl);
-                        } 
-                        else {
-                            console.log("Error data", jsonData);
-                            swal("Error", "Login failed", "error");
-                        }
-                    } 
-                    catch (err) {
-                        console.error("Invalid JSON:", err, data);
-                        swal("Error", "Unexpected server response", "error");
+                    if (data == 0) {
+                        swal("Error", "Save data is error.", "error");
                     }
-                },
-                error: function() {
-                    swal("Error", "Server error occurred", "error");
+                    else if (data == 1) {
+                        swal("Success", "Save data is successful.", "success");
+                        swal.close();
+                    } 
+                    else if (data == 2) {
+                        swal("Info", "Server Request no response.", "info");
+                    }  
+                    else {
+                        swal("Error", data, "error");
+                    }
                 }
             });
         });
-
     });
     </script>
 

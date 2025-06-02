@@ -34,7 +34,7 @@
     /* Desktop View */
     @media screen and (min-width: 1024px) {
         .container {
-            width: 70%;
+            width: 80%;
         }
 
         .mybottom-nav {
@@ -142,7 +142,7 @@
 <body class="container">
 
     <!-- ======= Header ======= -->
-    <header id="header" class="header fixed-top d-flex align-items-center container">
+    <header id="header" class="header fixed-top d-flex align-items-center">
         <div class="d-flex align-items-center justify-content-between">
             <a href="<?=roothtml.'setup/home.php'?>" class="logo d-flex align-items-center">
                 <img src="<?=roothtml.'assets/img/logo.png'?>" alt="">

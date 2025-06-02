@@ -41,33 +41,24 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Show IFrame -->
+                    <?php
+                    // Check if the target_url query parameter exists
+                    if (isset($_GET['target_url'])) {
+                        $targetUrl = htmlspecialchars($_GET['target_url']); // Sanitize the URL
 
-                    <div class="col-4">
-                        <div class="card info-card">
-                            <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Sport</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card info-card">
-                            <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Sport</h5>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-4">
-                        <div class="card info-card">
-                            <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
-                            <div class="card-body text-center">
-                                <h5 class="card-title">Sport</h5>
-                            </div>
-                        </div>
-                    </div>
+                        // Add an iframe to display the content from the target URL
+                        echo '<div class="col-12 mt-3">'; // Add some margin top
+                        echo '<iframe src="' . $targetUrl . '" style="width:100%; height:600px; border:none;"></iframe>'; // Adjust height as needed
+                        echo '</div>';
+                    } 
+                    else {
+                        // Optional: Display a message if no target_url is provided
+                        echo '<div class="col-12 mt-3">';
+                        echo '<p>No redirect URL specified.</p>';
+                        echo '</div>';
+                    }
+                    ?>
 
                 </div>
             </div>
@@ -81,3 +72,32 @@
 <?php
     include(root."master/footer.php");
 ?>
+
+
+
+<!-- <div class="col-4">
+    <div class="card info-card">
+        <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
+        <div class="card-body text-center">
+            <h5 class="card-title">Sport</h5>
+        </div>
+    </div>
+</div>
+
+<div class="col-4">
+    <div class="card info-card">
+        <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
+        <div class="card-body text-center">
+            <h5 class="card-title">Sport</h5>
+        </div>
+    </div>
+</div>
+
+<div class="col-4">
+    <div class="card info-card">
+        <img src="<?=roothtml.'assets/img/card.jpg'?>" class="card-img-top" alt="...">
+        <div class="card-body text-center">
+            <h5 class="card-title">Sport</h5>
+        </div>
+    </div>
+</div> -->
