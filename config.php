@@ -28,7 +28,7 @@ mysqli_set_charset($con,"utf8");
 $color="secondary";
 $share = array("Editor","Viewer");
 $usertype=array('Admin','User');
-$companykey = "946F8255CE3841BDAA954ADDDD6067AZ";
+$companykey = "E258AF866BB444E6A116C52B24DAB7C5";
 $portfolio = "ThirdPartySportsBook";
 $gpid = 1053;
 $gameId = 0;

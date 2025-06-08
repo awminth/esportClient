@@ -1,5 +1,9 @@
 <?php 
 
+//for local xampp
+error_reporting(0);
+ob_start();
+
 include("../config.php");
 $action=$_POST["action"];
 
@@ -46,10 +50,17 @@ if ($action == "login") {
                 'Content-Type: application/json'
             ]);
 
+            //for local xampp
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Only for dev
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); // Only for dev
+
             $response = curl_exec($ch);
             curl_close($ch);
 
             $apiResponse = json_decode($response, true);
+
+            //check error log in local xampp
+            error_log("API Response: " . print_r($apiResponse, true));
 
             if (isset($apiResponse['url']) && !empty($apiResponse['url'])) {
                 mysqli_commit($con);
@@ -74,6 +85,9 @@ if ($action == "login") {
                     $url = 'https:' . $url;
                 }
 
+                //for local xampp
+                ob_clean();
+
                 // Redirect to one-time login URL
                 echo json_encode([
                     "status" => "success",
@@ -83,6 +97,9 @@ if ($action == "login") {
             } 
             else {
                 mysqli_rollback($con);
+                //for local xampp
+                ob_clean();
+
                 echo json_encode([
                     "status" => "error",
                     "message" => "No URL received from API."
@@ -98,6 +115,9 @@ if ($action == "login") {
     catch (Exception $e) {
         mysqli_rollback($con);
         error_log($e->getMessage());
+        //for local xampp
+        ob_clean();
+
         echo "System error.";
     }
 }

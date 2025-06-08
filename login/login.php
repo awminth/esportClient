@@ -203,7 +203,7 @@
 
                         if (jsonData.status === "success") {
                             let redirectUrl = jsonData.redirect_url;
-
+                            
                             // Redirect to the login URL
                             window.location.href = "<?= roothtml.'setup/home.php'?>" + "?target_url=" + encodeURIComponent(redirectUrl);
                         } 
